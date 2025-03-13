@@ -1,6 +1,6 @@
-import Login from "@/components/Login";
+import Register from "@/components/Register";
 const loginRegisterForm = () => {
-  return <Login />;
+  return <Register />;
 };
 
 export default loginRegisterForm;
