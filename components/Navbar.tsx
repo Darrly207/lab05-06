@@ -1,8 +1,9 @@
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useState } from "react";
-
+import { useRouter } from "next/navigation";
 const Navbar = () => {
+  const navigate = useRouter();
   const user = useSelector((state: RootState) => state.auth.user);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -15,7 +16,10 @@ const Navbar = () => {
       <div className="flex flex-col md:flex-row justify-between items-center">
         {/* Logo and Title Section */}
         <div className="flex items-center w-full md:w-auto justify-between">
-          <div className="flex items-center">
+          <div
+            className="flex items-center"
+            onClick={() => navigate.push("profile")}
+          >
             <div className="h-4 w-4 bg-blue-600" />
             <h2 className="font-bold text-2xl shadow-md shadow-amber-100 cursor-pointer ml-2">
               {user?.fullName || "Maya"}
@@ -25,7 +29,6 @@ const Navbar = () => {
             </h4>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             className="block md:hidden text-gray-800"
             onClick={toggleMenu}
@@ -74,7 +77,10 @@ const Navbar = () => {
           <h4 className="font-light font-sans cursor-pointer w-full md:w-auto text-center">
             EDIT PROFILE
           </h4>
-          <h4 className="font-light font-sans cursor-pointer w-full md:w-auto text-center">
+          <h4
+            className="font-light font-sans cursor-pointer w-full md:w-auto text-center"
+            onClick={() => navigate.push("/studentManagement")}
+          >
             STUDENT MANAGEMENT
           </h4>
         </div>

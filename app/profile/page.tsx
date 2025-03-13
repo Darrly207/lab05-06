@@ -1,19 +1,23 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../../store/authSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RootState } from "@/store/store";
 import avatar from "../../assets/b79144e03dc4996ce319ff59118caf65.jpg";
 import Image from "next/image";
+
 export default function Home() {
   const navigation = useRouter();
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.auth.user);
-  const token =
-    useSelector((state: RootState) => state.auth.token) ||
-    localStorage.getItem("token");
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Ensure token is only accessed on the client
+    setToken(localStorage.getItem("token"));
+  }, []);
+
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) {
@@ -52,19 +56,20 @@ export default function Home() {
       }
     };
 
-    fetchUser();
+    if (token) {
+      fetchUser();
+    }
   }, [token, dispatch, navigation]);
 
   return (
     <div className="relative min-h-screen">
-      <div className="absolute left-0 flex w-full h-full hidden md:flex">
+      <div className="absolute left-0 flex w-full h-full sm:hidden md:flex">
         <div className="w-2/5 bg-[#E5D2BE]"></div>
         <div className="w-1/3 bg-white"></div>
       </div>
 
       <div className="relative flex justify-center items-center min-h-screen p-4">
         <div className="bg-white w-full max-w-4xl shadow-md flex flex-col md:flex-row">
-          {/* Left Section */}
           <div className="bg-neutral-100 p-6 sm:p-8 flex flex-col items-center justify-center w-full md:w-2/5">
             <div className="rounded-full overflow-hidden w-32 h-32 sm:w-48 sm:h-48 border-8 border-gray-300 mb-4 sm:mb-6">
               <Image

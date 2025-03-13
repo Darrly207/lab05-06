@@ -1,22 +1,24 @@
+"use client";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addStudent, removeStudent, updataStudent } from "@/store/studentSlice";
+import { addStudent, removeStudent, updateStudent } from "@/store/studentSlice";
 import { RootState } from "@/store/store";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 // Types
 type Student = {
-  id: number;
+  _id: string;
   studentCode: string;
   name: string;
   isActive: boolean;
 };
 
 // Components
-export const StudentList = () => {
+const StudentList = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
   const [newStudent, setNewStudent] = useState({
     studentCode: "",
     name: "",
@@ -30,12 +32,11 @@ export const StudentList = () => {
   const fetchStudents = async () => {
     try {
       const response = await fetch(
-        "https://user-auth-api-nestjs.onrender.com/api/students"
+        "https://user-auth-api-nestjs.onrender.com/students"
       );
       const data = await response.json();
-
       // Add each student to Redux
-      data.forEach((student: Student) => {
+      data.data.forEach((student: Student) => {
         dispatch(addStudent(student));
       });
     } catch (error) {
@@ -50,7 +51,7 @@ export const StudentList = () => {
   const handleAddStudent = async () => {
     try {
       const response = await fetch(
-        "https://user-auth-api-nestjs.onrender.com/api/students",
+        "https://user-auth-api-nestjs.onrender.com/students",
         {
           method: "POST",
           headers: {
@@ -59,9 +60,8 @@ export const StudentList = () => {
           body: JSON.stringify(newStudent),
         }
       );
-
       const data = await response.json();
-      dispatch(addStudent(data));
+      dispatch(addStudent(data.data));
       setNewStudent({ studentCode: "", name: "", isActive: true });
       setIsModalOpen(false);
     } catch (error) {
@@ -69,14 +69,11 @@ export const StudentList = () => {
     }
   };
 
-  const handleDeleteStudent = async (id: number) => {
+  const handleDeleteStudent = async (id: string) => {
     try {
-      await fetch(
-        `https://user-auth-api-nestjs.onrender.com/api/students/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
+      await fetch(`https://user-auth-api-nestjs.onrender.com/students/${id}`, {
+        method: "DELETE",
+      });
 
       dispatch(removeStudent(id));
       setConfirmDelete(null);
@@ -87,7 +84,7 @@ export const StudentList = () => {
 
   const viewStudentDetails = (student: Student) => {
     setSelectedStudent(student);
-    router.push(`/students/${student.id}`);
+    router.push(`/studentManagement/${student._id}`);
   };
 
   return (
@@ -133,7 +130,7 @@ export const StudentList = () => {
                     Name
                   </th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">
-                    Status
+                    isActive
                   </th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700">
                     Actions
@@ -143,7 +140,7 @@ export const StudentList = () => {
               <tbody>
                 {students.map((student) => (
                   <tr
-                    key={student.id}
+                    key={student._id}
                     className="border-b hover:bg-gray-50 cursor-pointer"
                     onClick={() => viewStudentDetails(student)}
                   >
@@ -190,7 +187,7 @@ export const StudentList = () => {
                       </button>
                       <button
                         className="text-red-600 hover:text-red-800 transition-colors"
-                        onClick={() => setConfirmDelete(student.id)}
+                        onClick={() => setConfirmDelete(student._id)}
                       >
                         <svg
                           className="w-5 h-5"
@@ -308,7 +305,7 @@ export const StudentList = () => {
                   if (selectedStudent) {
                     try {
                       const response = await fetch(
-                        `https://user-auth-api-nestjs.onrender.com/api/students/${selectedStudent.id}`,
+                        `https://user-auth-api-nestjs.onrender.com/students/${selectedStudent._id}`,
                         {
                           method: "PUT",
                           headers: {
@@ -322,9 +319,7 @@ export const StudentList = () => {
                       );
 
                       const data = await response.json();
-                      dispatch(
-                        updataStudent({ ...data, id: selectedStudent.id })
-                      );
+                      dispatch(updateStudent({ ...data.data }));
                       setIsModalOpen(false);
                       setSelectedStudent(null);
                     } catch (error) {
@@ -373,3 +368,4 @@ export const StudentList = () => {
     </div>
   );
 };
+export default StudentList;

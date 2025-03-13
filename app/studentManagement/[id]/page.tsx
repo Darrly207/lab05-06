@@ -1,62 +1,64 @@
+"use client";
 import { useState } from "react";
 import { useEffect } from "react";
-import { useRouter } from "next/router";
+import { useParams, useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
-import { updataStudent } from "@/store/studentSlice";
-import { RootState } from "@/store/store";
-export const StudentDetail = () => {
-  const [student, setStudent] = useState<RootState | null>(null);
+import { updateStudent } from "@/store/studentSlice";
+import type { Student } from "@/store/studentSlice";
+
+function StudentDetail() {
+  const [student, setStudent] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [editedStudent, setEditedStudent] = useState<RootState | null>(null);
-
+  const [editedStudent, setEditedStudent] = useState<Student | null>(null);
   const router = useRouter();
   const dispatch = useDispatch();
-  const { id } = router.query;
-
-  useEffect(() => {
-    if (id) {
-      fetchStudentDetails();
-    }
-  }, [id]);
+  const params = useParams() as { id: string };
+  const id = params.id;
 
   const fetchStudentDetails = async () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://user-auth-api-nestjs.onrender.com/api/students/${id}`
+        `https://user-auth-api-nestjs.onrender.com/students/${id}`
       );
       const data = await response.json();
-      setStudent(data);
-      setEditedStudent(data);
+      setStudent(data.data);
+      setEditedStudent(data.data);
     } catch (error) {
       console.error("Error fetching student details:", error);
     } finally {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (id) {
+      fetchStudentDetails();
+    }
+  }, [id]);
 
   const handleSaveChanges = async () => {
     if (!editedStudent) return;
-
+    console.log("Saving changes for student:", JSON.stringify(editedStudent));
     try {
       const response = await fetch(
-        `https://user-auth-api-nestjs.onrender.com/api/students/${id}`,
+        `https://user-auth-api-nestjs.onrender.com/students/${id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name: editedStudent.students,
-            isActive: editedStudent.students,
+            name: editedStudent.name,
+            isActive: editedStudent.isActive,
           }),
         }
       );
 
       const data = await response.json();
-      dispatch(updataStudent({ ...data, id: Number(id) }));
-      setStudent({ ...data, id: Number(id) });
+
+      dispatch(updateStudent(data.data));
+      setStudent(data.data);
       setEditing(false);
     } catch (error) {
       console.error("Error updating student:", error);
@@ -124,8 +126,9 @@ export const StudentDetail = () => {
                   Student Code
                 </label>
                 <input
+                  disabled
                   type="text"
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border rounded-md bg-gray-300"
                   value={editedStudent?.studentCode || ""}
                   onChange={(e) =>
                     setEditedStudent({
@@ -216,7 +219,7 @@ export const StudentDetail = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-500">ID</p>
-                      <p className="font-medium">{student.id}</p>
+                      <p className="font-medium">{student._id}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Student Code</p>
@@ -267,4 +270,5 @@ export const StudentDetail = () => {
       </div>
     </div>
   );
-};
+}
+export default StudentDetail;
